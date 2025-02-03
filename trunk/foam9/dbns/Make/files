@@ -1,0 +1,15 @@
+dbnsFlux/roeFlux/roeFlux.C
+dbnsFlux/rusanovFlux/rusanovFlux.C
+dbnsFlux/betaFlux/betaFlux.C
+dbnsFlux/hllcFlux/hllcFlux.C
+dbnsFlux/hllcALEFlux/hllcALEFlux.C
+
+multigrid/mgMeshLevel/mgMeshLevel.C
+multigrid/mgMeshLevel/fineMgMeshLevel.C
+multigrid/mgMeshLevel/coarseMgMeshLevel.C
+
+multigrid/mgFieldLevel/mgFieldLevel.C
+multigrid/mgFieldLevel/fineMgFieldLevel.C
+multigrid/mgFieldLevel/coarseMgFieldLevel.C
+
+LIB = $(FOAM_USER_LIBBIN)/libdbns
