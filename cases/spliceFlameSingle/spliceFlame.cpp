@@ -13,6 +13,18 @@
 #define NETA    0.4
 #define CLAMBDA 6.7
 
+/* 1-D flamelet code using LEM triplet-map stirring. The parameters are given
+ * in input(dot)yaml. Note that the current version of Cantera uses (dot)yaml mechanism
+ * files and so the previous (dot)cti files will have to be converted using the
+ * `ctml2yaml' utility distributed with Cantera.
+ *
+ * The flame is stabilized by splicing out a length `spliceLengthOut' by
+ * comparing the current (expanded due to combustion) domain size with the
+ * original domain size, followed by splicing in `spliceLengthIn' domain
+ * fragments based on the density ratio.
+ *
+ */
+
 
 int main(int argc, char** argv){
 
