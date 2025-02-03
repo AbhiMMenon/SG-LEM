@@ -1,0 +1,5 @@
+fieldAverage/fieldAverage.C
+fieldAverage/fieldAverageItem/fieldAverageItem.C
+fieldAverage/fieldAverageItem/fieldAverageItemIO.C
+
+LIB = $(FOAM_USER_LIBBIN)/libUserAvg
