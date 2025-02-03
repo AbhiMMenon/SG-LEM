@@ -1,0 +1,15 @@
+Data is generated: 'November 15, 2023'
+Mechanism used: 2S_CH4_BFER.cti
+
+	Warning : 'CH4' fit error is larger than tolerance.
+	Log-polynomial mu error: 0.011638663047612198
+	Log-polynomial kappa error: 0.016094143826416486
+
+	Warning : 'CH4' fit error is larger than tolerance.
+	Polynomial mu error: 0.011638663047612198
+	Polynomial kappa error: 0.016094143826416486
+
+	Warning : 'CO' fit error is larger than tolerance.
+	Sutherland mu error: 0.013814890120109781
+	Sutherland STD: array([4.84423817e-09, 5.68505817e+00])
+	Euken kappa error: 0.02106278140277022

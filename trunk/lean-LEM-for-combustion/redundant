@@ -1,0 +1,739 @@
+
+///{{{  REDUNDANT
+ // void initYcondZ (); //redundant
+ // void initTcondZ(bool useEquil = false); //redundant
+ // double getPDFMeanT(double zMean, double zVar); //redundant
+ // std::vector<double> getPDFMeanY(double zMean, double zVar); //redundant
+ // void calcTcondZ (double bFac = 1.00); //redundant
+ // void calcYcondZ (double bFac = 1.00); //redundant
+ // void calcScondZ (double bFac = 1.00); //redundant
+ // void initYcondZC(); //redundant
+ // void initTcondZC(); //redundant
+ // void calcYcondZC(double bFac = 1.00);//redundant
+ // void calcTcondZC(double bFac = 1.00);//redundant
+ // std::vector<double> getPDFMeanY(double zMean, double zVar, double cMean);//redundant
+ // double getPDFMeanT(double zMean, double zVar, double cMean);//redundant
+ // void setEquilFlameTemp_Z(); //REDUNDANT
+///}}}
+
+
+///{{{ REDUNDANT
+
+/**----------------------------------------------------------------------------
+ * @brief       Initializes the YcondZ vector with equilibrium
+ *              unburnt mass fractions for given Z, values persist until
+ *              updated by getTcondZ. This should be called in the "initialize"
+ *              function for the line after ZBinSize has been fixed.
+ *
+ * @author      A.Menon
+ *---------------------------------------------------------------------------*/
+void LEMLINE::initYcondZ()
+{
+
+    IdealGasMix& gas = lem.gas;
+
+    // --- allocate memory for Ycondz
+    YcondZ.resize(ZBinSize);
+
+
+    for(size_t  ix = 0; ix  <  ZBinSize; ix++){
+        YcondZ[ix].resize(nSpecies);
+    }
+    //  ---
+
+  //double* Yfuel = new double[nSpecies];
+    double* Yfuel    =   lem.tmp_s1;
+    double* Yox      =   lem.tmp_s2;
+
+    gas.setState_TPX(200, OneAtm, lem.fuelStream);
+    gas.getMassFractions(Yfuel);
+    gas.setState_TPX(200, OneAtm, lem.oxStream);
+    gas.getMassFractions(Yox);
+
+    for(size_t ix = 0; ix < ZBinSize; ix++){
+        double Z  = 1./ZBinSize * ix;
+        for(size_t jx = 0; jx < nSpecies; jx++) {
+            // unburnt
+            YcondZ[ix][jx] = Z * Yfuel[jx] +
+                        (1 - Z)* Yox  [jx];
+        }
+    }
+}
+
+/**----------------------------------------------------------------------------
+ * @brief       Initializes the TcondZ vector with equilibrium
+ *              equilibrium/unburnt temperatures for given Z, values persist
+ *              until updated by getTcondZ. This should be called in the
+ *              "initialize" function for the line after ZBinSize has been
+ *              fixed.
+ *
+ * @author      A.Menon
+ *---------------------------------------------------------------------------*/
+void LEMLINE::initTcondZ(bool useEquil)
+{
+    TcondZ.resize    (ZBinSize);
+    DcondZ.resize    (ZBinSize,0.0); // added 25 July
+    rhoCondZ.resize  (ZBinSize,0.0); // added 25 July
+    ThetacondZ.resize(ZBinSize,0.0); // added 17 Aug
+    for(size_t ix  = 0; ix < ZBinSize; ix++)
+    {
+        if(useEquil)
+            TcondZ[ix] = TEquil_z[ix];
+
+        else{
+            double   Z = Zstep * ix ;
+            TcondZ[ix] = Z * lem.fuelStreamT
+                         + (1-Z)*lem.oxStreamT;
+        }
+    }
+}
+
+
+
+
+/**----------------------------------------------------------------------------
+ * @brief       Returns the value \int_{0}^{1} P(Z|zMean, zVar)Y(Z)dz. Uses
+ *              YcondZ[][] for T(Z) and the number of points for integration is
+ *              ZBinSize
+ *
+ * @param      zMean    \input  Favre averaged Mixture fraction from CFD
+ * @param      zVar     \input  Favre averaged mixture fraction variance from
+ *                              CFD
+ * @author      A.Menon
+ *
+ *---------------------------------------------------------------------------*/
+std::vector<double> LEMLINE::getPDFMeanY(double zMean, double zVar){
+
+    if(zVar > (zMean*(1-zMean))){
+        std::cout << "\n ERROR!! zVar > (zMean * [1 -zMean])";
+        return std::vector<double> (ZBinSize, 0.0);     // return some 0's
+    }
+
+    // --- random variable P(Z|zMean, zVar) * Y(Z)
+    std::vector<double> YPDFmean(nSpecies, 0.0);
+    std::vector<double>     fx(ZBinSize, 0.0);
+    double Yfx[ZBinSize][nSpecies];
+    double gamma, alpha, beta;
+
+    // --- coefficients and make beta distribution object
+    gamma = zMean * (1. - zMean)/zVar - 1.;
+    alpha = gamma * zMean;
+    beta  = gamma * (1. - zMean);
+
+    // --- fill up P(Z) from 0 to 1 ignoring extrema
+    for(size_t ix = 1; ix < ZBinSize-1; ix++){
+        double Z = ix * Zstep;
+        // -- the fastest option for beta PDFs
+        fx[ix] = boost::math::ibeta_derivative(alpha, beta, Z);
+        }
+
+    // --- flatten extrems
+    fx[0]          = fx[1];
+    fx[ZBinSize-1] = fx[ZBinSize -2];
+
+    // -- Y(Z)P(Z);
+    for(size_t ix = 0; ix < ZBinSize; ix++){
+        for(size_t jx = 0; jx < nSpecies; jx ++){
+            Yfx[ix][jx] = YcondZ[ix][jx] * fx[ix];
+        }
+    }
+
+    // The trapz integration
+    for(size_t ix = 0; ix < ZBinSize -1; ix++){
+        for(size_t jx = 0; jx < nSpecies; jx ++){
+            double Y1 = Yfx[ix][jx];
+            double Y2 = Yfx[ix + 1][jx];
+            double avg = Y1 + Y2;
+            YPDFmean[jx] += 0.5 * avg * Zstep;
+        }
+    }
+    return YPDFmean;         // returns the integrated value
+}
+
+
+
+/**----------------------------------------------------------------------------
+ * @brief      Returns the value \int_{0}^{1} P(Z|zMean, zVar)Y(Z)dz. Uses
+ *             YcondZC[][] for Y(Z) and the number of points for integration
+ *             (ZBinSize -2) to avoid . Integration is performed only for cMean
+ *             assuming a delta PDF for C i.e it is 0 at every other point.
+ *
+ * @param      zMean    \input  Favre averaged Mixture fraction from CFD
+ * @param      CMean    \input  Favre averaged progress variable from CFD
+ * @param      zVar     \input  Favre averaged mixture fraction variance from
+ *                              CFD
+ * @author      A.Menon
+ *---------------------------------------------------------------------------*/
+std::vector<double> LEMLINE::getPDFMeanY(double zMean, double zVar, double cMean){
+
+    if(zMean > 1.0 || zMean < 0.0 || cMean > 1 || cMean < 0){
+        std::cout << "\nERROR! Invalid zMean OR cMean value\n\nExiting...";
+        exit(1);
+    }
+
+    // --- random variable P(Z|zMean, zVar) * Y(Z,C)
+    std::vector<double> sum(nSpecies  , 0.0);
+    std::vector<double>  fx(ZBinSize, 0.0);
+    double Yfx[ZBinSize][nSpecies];
+    double gamma, alpha, beta;
+
+    int    cPos = cMean / Cstep;
+
+    // --- coefficients and make beta distribution object
+    gamma = zMean * (1. - zMean)/zVar - 1.;
+    alpha = gamma * zMean;
+    beta  = gamma * (1. - zMean);
+
+    // --- fill up P(Z) from 0 to 1
+    for(size_t ix = 1; ix < ZBinSize-1; ix++){
+        double Z  = ix * Zstep;
+        fx[ix] = boost::math::ibeta_derivative(alpha, beta, Z);
+    }
+
+    // --- flatten extremes
+    fx[0]          = fx[1];
+    fx[ZBinSize-1] = fx[ZBinSize -2];
+
+    // -- Y(Z,C)P(Z)
+    for(size_t ix = 0; ix < ZBinSize; ix++){
+        for(size_t jx = 0; jx < nSpecies; jx++){
+            double Y;
+
+            if(cMean < 1.0){
+                Y = YcondZC[ix][cPos][jx]  +
+                   (YcondZC[ix][cPos+1][jx]-YcondZC[ix][cPos][jx])/Cstep *
+                   fmod(cMean, Cstep);
+            }
+            else
+                Y = YcondZC[ix][CBinSize -1][jx];
+            Yfx[ix][jx] = Y * fx[ix];
+        }
+
+    }
+
+    // -- Trapz integrator
+    for(size_t ix = 0; ix < ZBinSize -1; ix++){
+        for(size_t jx = 0; jx < nSpecies; jx++){
+
+            double ag = Yfx[ix][jx] + Yfx[ix +1][jx];
+            sum[jx] += 0.5 * (ag) * Zstep;
+        }
+    }
+    return sum;         // returns the integrated value
+}
+
+/**---------------------------------------------------------------------------
+ * @brief       Computes  vector of temperatures conditioned on Z, the number
+ *              of elements and bin size controlled by ZBinSize, temperatures
+ *              are averaged conventionally
+ *
+ *              UPDATE: simple temporal blending has been added
+ *
+ * @author      A.Menon
+ *--------------------------------------------------------------------------*/
+void LEMLINE::calcTcondZ(double bFac)
+{
+    if(bFac > 1 || bFac < 0){
+        std::cout <<
+            "\n \nError, inappropriate T(Z) blending factor!! {bFac = [0:1]}";
+        exit(0);
+    }
+
+    int         pos;
+    size_t      ix;
+
+    std::vector<int>    hitCount(ZBinSize, 0  );
+    std::vector<double> tempTZ  (ZBinSize, 0.0);
+    std::vector<double> tempDZ  (ZBinSize, 0.0); // for divU
+    std::vector<double> tempHZ  (ZBinSize, 0.0); // for heat relase
+    std::vector<double> tempRZ  (ZBinSize, 0.0); // for density
+    std::list<CellData>::iterator it;
+
+    // scan line
+    for (it = cells.begin(); it != cells.end(); ++it)
+    {
+        pos           = (*it).Z / Zstep;
+        tempTZ[pos]  += (*it).T;
+        tempDZ[pos]  += (*it).divU;
+        tempHZ[pos]  += (*it).dedt;
+        tempRZ[pos]  += (*it).rho;
+        hitCount[pos]++;
+    }
+
+    for(ix = 0; ix < ZBinSize; ix++)
+    {
+      //TcondZ[ix] = TcondZ[ix] / (hitCount[ix]);
+        if(hitCount[ix] > 0)
+        {
+            double T = tempTZ[ix]/hitCount[ix];
+            double D = tempDZ[ix]/hitCount[ix]; // additional
+            double H = tempHZ[ix]/hitCount[ix];
+            double R = tempHZ[ix]/hitCount[ix];
+            TcondZ[ix]= (bFac  * T) +
+                  (1.0 - bFac) * TcondZ[ix];
+
+            // condition divU
+            DcondZ[ix]= (bFac  * D) +
+                  (1.0 - bFac) * DcondZ[ix];
+
+            // condition heat relase; added mid August
+            ThetacondZ[ix]= (bFac  * H) +
+                  (1.0 - bFac) * ThetacondZ[ix];
+
+            // condition heat relase; added mid August
+            rhoCondZ[ix]= (bFac  * R) +
+                  (1.0 - bFac) * rhoCondZ[ix];
+
+
+        }
+    }
+}
+
+
+
+
+/**---------------------------------------------------------------------------
+ * @brief       Computes the matrix of Yi conditioned on Z, the matrix is of
+ *              size [ZBinSize][nSpecies], averaging is conventional (not
+ *              weighted, as of now)
+ *
+ *              UPDATE: simple temporal blending has been added
+ *
+ * @author      A.Menon
+ *--------------------------------------------------------------------------*/
+
+void LEMLINE::calcYcondZ(double bFac)
+{
+    if(bFac > 1 || bFac < 0){
+        std::cout <<
+            "\n \nError, inappropriate Y(Z) blending factor!! {bFac = [0:1]}";
+        exit(0);
+    }
+
+    int         pos;
+    int         hitCount[ZBinSize]{};
+    double      temp    [ZBinSize][nSpecies]{};       // initializes to 0.0
+
+    std::list<CellData> ::iterator it;
+
+    // collect Ys for corresponding bin
+    for (it = cells.begin(); it != cells.end(); ++it){
+        pos = (*it).Z / Zstep;
+        hitCount[pos]++;
+        for(size_t jx = 0; jx < nSpecies; jx++){
+            temp[pos][jx] += (*it).Y[jx];
+        }
+    }
+
+    // persistence + blending update for YcondZ[][]
+    for(size_t ix = 0; ix < ZBinSize; ix++){
+        if(hitCount[ix] > 0)
+            for(size_t jx = 0; jx < nSpecies; jx++)
+                YcondZ[ix][jx]  = bFac  * (temp[ix][jx] / hitCount[ix]) +
+                           (1.0 - bFac) *  YcondZ[ix][jx];
+    }
+}
+
+/**---------------------------------------------------------------------------
+ * @brief       Computes TcondZ[] as well as YcondZ[][],
+ *              LENGTH WEIGHTED AVERAGING
+ *              Simple temporal blending
+ *
+ * @param       /input  bFac    Blending factor between 0.0 and 10
+ *
+ * @author      A.Menon
+ *--------------------------------------------------------------------------*/
+
+void LEMLINE::calcScondZ(double bFac)
+{
+    if(bFac > 1 || bFac < 0){
+        std::cout <<
+            "\n \nError, inappropriate Y(Z) blending factor!! {bFac = [0:1]}";
+        exit(0);
+    }
+
+    int    pos;
+    double hitLength[ZBinSize]{0.0};
+    double     tempT[ZBinSize]{0.0};
+    double     tempZ[ZBinSize][nSpecies]{0.0};       // initializes to 0.0
+
+    std::list<CellData> ::iterator it;
+
+    // collect Ys for corresponding bin
+    for (it = cells.begin(); it != cells.end(); ++it){
+
+                  pos   = (*it).Z / Zstep;
+        hitLength[pos] += (*it).dx;
+            tempT[pos] += (*it).T * (*it).dx;
+
+        for(size_t jx = 0; jx < nSpecies; jx++){
+            tempZ[pos][jx] += (*it).Y[jx] * (*it).dx;
+        }
+    }
+
+    // persistence + blending update for YcondZ[][] as well as TcondZ[]
+    for(size_t ix = 0; ix < ZBinSize; ix++){
+        if(hitLength[ix] > 0.0){
+
+            double T   = tempT[ix]/hitLength[ix];
+            TcondZ[ix] = (bFac * T) + (1.0 - bFac) * TcondZ[ix];
+            for(size_t jx = 0; jx < nSpecies; jx++)
+                YcondZ[ix][jx]  = bFac  * (tempZ[ix][jx] / hitLength[ix]) +
+                           (1.0 - bFac) *  YcondZ[ix][jx];
+        }
+    }
+
+}
+
+/**----------------------------------------------------------------------------
+ * REDUNDANT
+ * @brief       initializes the YcondZC[][][] with equilibrium values
+ *
+ *              OBS!!! This has to be re-written using homogenous reactor
+ *              approach
+ *
+ *              OBS! perhaps add initial pressure on LEM line?
+ *
+ * @author      A.Menon
+ *---------------------------------------------------------------------------*/
+
+void LEMLINE::initYcondZC(){
+
+    // --- memory stuff for global
+    YcondZC.resize(ZBinSize);
+    for(size_t ix = 0; ix < ZBinSize; ix++){
+        YcondZC[ix].resize(CBinSize);
+        for(size_t jx = 0; jx < CBinSize; jx ++){
+            YcondZC[ix][jx].resize(nSpecies);
+        }
+    }
+
+    ifstream file;
+    file.open("initYcondZC.dat" );
+    if(file.is_open()){
+        // -- check the header
+        int fZbins, fCbins,fnSpecies;
+        file >> fZbins >> fCbins >> fnSpecies;
+        if( (fZbins != ZBinSize) || (fCbins != CBinSize) || (fnSpecies !=
+                    nSpecies)){
+            std::cout << "\nERROR initYcondZC.dat has incorrect sizes\n\n";
+            file.close();
+            exit(0);
+        }
+    }
+    else{
+        std::cout << "\nERROR!! file initYcondZC.dat not found";
+        file.close();
+        exit(0);
+    }
+
+
+    for(size_t ix = 0; ix < ZBinSize; ix++)
+        for(size_t jx = 0; jx < CBinSize; jx ++)
+            for(size_t kx = 0; kx < nSpecies; kx++){
+                double read;
+                file >> read;
+                YcondZC[ix][jx][kx] = read;
+            }
+
+    file.close();
+
+
+}
+
+/**--------------------------------------------------------------------------
+ * REDUNDANT
+ *
+ * @brief       initializes the TcondZC[][] with equilibrium values
+ *
+ * @author      A.Menon
+ *--------------------------------------------------------------------------*/
+
+void LEMLINE::initTcondZC(){
+
+    TcondZC.resize(ZBinSize);
+
+    //-- memory stuff
+    for(size_t ix = 0; ix < ZBinSize; ix++){
+        TcondZC[ix].resize(CBinSize);
+    }
+
+    // initialize with equilibrium temperatures
+    for(size_t ix = 0; ix < ZBinSize; ix++){
+
+        double Z    = ix * Zstep;
+        double TUnb = Z  * lem.fuelStreamT +
+                (1. - Z) * lem.  oxStreamT;
+
+        for(size_t jx = 0; jx < CBinSize; jx++){
+
+            double C        = jx * Cstep;
+            TcondZC[ix][jx] = C  * TEquil_z[ix] +
+                        (1. - C) * TUnb;
+        }
+    }
+}
+
+/**---------------------------------------------------------------------------
+ * @brief       Calculates the matrix YcondZC[ZBinSize][CBinSize][nSpecies]
+ *              using hybrid persistence-temporal blending
+ *
+ *              Persistence: Values persist on YcondZC[][][] until suitable
+ *              values of Z and C are found on the line
+ *
+ *              Blending: T_new         = bFac  * Y_new +
+ *                                   (1 - bFac) * Y_old
+ *
+ *              OBS! Weighted average should be investigated
+ *
+ * @author      A.Menon
+ *--------------------------------------------------------------------------*/
+void LEMLINE::calcYcondZC(double bFac )
+{
+    if(bFac > 1 || bFac < 0){
+        std::cout <<
+        "\n \nError, inappropriate Y(Z,C) blending factor!! {bFac = [0:1]}";
+        exit(0);
+    }
+
+    int posZx, posCy;
+    int    hitCount[ZBinSize][CBinSize]{};
+    double tempY   [ZBinSize][CBinSize][nSpecies]{}; // temporary
+
+    std::list<CellData>::iterator it;
+
+    // increment the "found" buckets
+    for (it = cells.begin(); it != cells.end(); ++it){
+
+        posZx = (*it).Z/Zstep;
+        posCy = (*it).C/Cstep;
+
+        for(size_t ix = 0; ix < nSpecies; ix++){
+            tempY[posZx][posCy][ix] += (*it).Y[ix];
+        }
+        hitCount[posZx][posCy] ++;
+    }
+
+    // average over number of hits
+    for(size_t ix = 0; ix < ZBinSize; ix++){
+        for(size_t jx = 0; jx < CBinSize; jx++){
+            if(hitCount[ix][jx] > 0){
+                for(size_t kx = 0; kx < nSpecies; kx++){
+
+                    // blending + persistence
+                    double Y = tempY[ix][jx][kx]/hitCount[ix][jx];
+                    YcondZC[ix][jx][kx]  = bFac  * Y +
+                                     (1. - bFac) * YcondZC[ix][jx][kx];
+                }
+            }
+        }
+    }
+}
+
+/**---------------------------------------------------------------------------
+ * @brief       Computes  matrix of temperatures conditioned on Z and C, the
+ *              number of elements and bin size controlled by ZBinSize and
+ *              CBinSize. Uses hybrid persistence-blending method, temperatures
+ *              are averaged conventionally. Simple temporal blending has been
+ *              added.
+ *
+ *              Persistence: Values persist on TcondZC[][] until suitable
+ *              values of Z and C are found on the line
+ *
+ *              Blending: T_new         = bFac  * T_new +
+ *                                   (1 - bFac) * T_old
+ *
+ *              OBS! Weighted average should be investigated
+ *
+ * @author      A.Menon
+ *--------------------------------------------------------------------------*/
+void LEMLINE::calcTcondZC(double bFac )
+{
+    if(bFac > 1 || bFac < 0){
+        std::cout <<
+        "\n \nError, inappropriate T(Z,C) blending factor!! {bFac = [0:1]}";
+        return;
+    }
+
+    int         posZx, posCy;
+    int         hitCount[ZBinSize][CBinSize]{}; // initializes to 0
+    double      temp    [ZBinSize][CBinSize]{};
+
+    std::list<CellData>::iterator it;
+
+    // update the "found" buckets
+    for (it = cells.begin(); it != cells.end(); ++it){
+        posZx   = (*it).Z/Zstep;
+        posCy   = (*it).C/Cstep;
+
+        temp    [posZx][posCy] += (*it).T;
+        hitCount[posZx][posCy] ++;
+    }
+
+    // average over hit counts
+    for(size_t ix = 0; ix < ZBinSize; ix++){
+        for(size_t jx = 0; jx < CBinSize; jx++){
+
+            if(hitCount[ix][jx] > 0){
+                double T        = temp[ix][jx]/hitCount[ix][jx];
+                TcondZC[ix][jx] = bFac  * T +
+                            (1. - bFac) * TcondZC[ix][jx];
+            }
+        }
+    }
+}
+
+/**----------------------------------------------------------------------------
+ * @brief       Returns the value \int_{0}^{1} P(Z|zMean, zVar)T(Z)dz. Uses
+ *              TcondZ[] for T(Z) and the number of points for integration is
+ *              (ZBinSize - 2), this avoids the domain error
+ *
+ * @param      zMean    \input  Favre averaged Mixture fraction from CFD
+ * @param      zVar     \input  Favre averaged mixture fraction variance from
+ *                              CFD
+ * @author      A.Menon
+ *
+ *---------------------------------------------------------------------------*/
+double LEMLINE::getPDFMeanT(double zMean, double zVar){
+
+
+    if(zVar > (zMean*(1-zMean))){
+        std::cout << "\n ERROR!! zVar > (zMean * [1 -zMean])";
+        return 0.0;
+    }
+
+    // --- random variable P(Z|zMean, zVar)
+    std::vector<double>  fx(ZBinSize,0.0);
+    std::vector<double> Tfx(ZBinSize,0.0);
+    double gamma, alpha, beta;
+    double sum = 0.0;
+
+    // --- coefficients and make beta distribution object
+    gamma = zMean * (1. - zMean)/zVar - 1.;
+    alpha = gamma * zMean;
+    beta  = gamma * (1. - zMean);
+
+
+    // --- fill up P(Z)T(Z) from 0 to 1 ignoring extrema
+    for(size_t ix = 1; ix < ZBinSize-1; ix++){
+        double Z = ix * Zstep;
+        // -- the fastest option for beta PDFs
+        fx[ix] = boost::math::ibeta_derivative(alpha, beta, Z);
+    }
+
+//  // --- flatten extrema
+//  fx[0]          = fx[1];
+//  fx[ZBinSize-1] = fx[ZBinSize -2];
+
+// -- extreme values
+    fx[0]          = boost::math::ibeta_derivative(alpha, beta, 1e-6);
+    fx[ZBinSize-1] = boost::math::ibeta_derivative(alpha, beta, 1.-1e-6);
+
+    // -- T(Z)P(Z)
+    for(size_t ix = 0; ix < ZBinSize; ix++){
+        Tfx[ix] = fx[ix] * TcondZ[ix];
+    }
+
+    // The trapz integration
+    for(size_t ix = 0; ix < ZBinSize -1; ix++){
+        // -- sum up trapezoid areas
+        double T1  = Tfx[ix];
+        double T2  = Tfx[ix+1];
+        double avg = T1 + T2;
+        sum += 0.5 * avg * Zstep;
+    }
+
+    return sum;         // returns the integrated value
+}
+
+/**----------------------------------------------------------------------------
+ * @brief       Returns the value \int_{0}^{1} P(Z|zMean, zVar)T(Z)dz. Uses
+ *              TcondZC[] for T(Z) and the number of points for integration is
+ *              ZBinSize. Integration is performed only for cMean assuming a
+ *              delta PDF for C i.e it is 0 at every other point.
+ *
+ * @param      zMean    \input  Favre averaged Mixture fraction from CFD
+ * @param      CMean    \input  Favre averaged progress variable from CFD
+ * @param      zVar     \input  Favre averaged mixture fraction variance from
+ *                              CFD
+ * @author      A.Menon
+ *
+ *---------------------------------------------------------------------------*/
+double LEMLINE::getPDFMeanT(double zMean, double zVar, double cMean){
+
+    if(zVar > (zMean*(1-zMean))){
+        std::cout << "\n ERROR!! zVar > (zMean * [1 -zMean])";
+        return 0.0;     // return some 0's
+    }
+
+    std::vector<double>  fx(ZBinSize,0.0);
+    std::vector<double> Tfx(ZBinSize,0.0);
+    double gamma, alpha, beta;
+    double sum = 0.0;
+    int    cPos = cMean / Cstep;
+
+    // --- coefficients and make beta distribution object
+    gamma = zMean * (1. - zMean)/zVar - 1.;
+    alpha = gamma * zMean;
+    beta  = gamma * (1. - zMean);
+
+    // --- fill up P(Z) from 0 to 1 ignoring extrema
+    for(size_t ix = 1; ix < ZBinSize-1; ix++){
+        double Z  = ix * Zstep;
+        // -- the fastest option for beta PDFs
+        fx[ix] = boost::math::ibeta_derivative(alpha, beta, Z);
+    }
+
+    // --- flatten extrema
+    fx[0]          = fx[1];
+    fx[ZBinSize-1] = fx[ZBinSize -2];
+
+    // -- T(Z,C)P(Z)
+    for(size_t ix = 0; ix < ZBinSize; ix++){
+        double T;
+        if(cMean < 1.0){
+            T = TcondZC[ix][cPos]  +
+               (TcondZC[ix][cPos+1]-TcondZC[ix  ][cPos])/Cstep *
+               fmod(cMean, Cstep);
+        }
+        else
+            T = TcondZC[ix ][CBinSize-1];
+
+        Tfx[ix] = T * fx[ix];
+    }
+
+    // The trapz integration
+    for(size_t ix = 0; ix < ZBinSize -1; ix++){
+        double avg = Tfx[ix] + Tfx[ix +1];
+        sum += 0.5 * avg * Zstep;
+    }
+
+    return sum;         // returns the integrated value
+}
+//}}}
+
+/**----------------------------------------------------------------------------
+ * @brief       Resets the value of ZBinSize and CBinSize, re-initializes
+ *              conditioned and Equilibrium matrices
+ *
+ *              DO NOT CALL DURING SIMULATION
+ *
+ *
+ * @param      zBin     \input  new ZBinSize
+ * @param      cBin     \input  new CBinSize
+ *
+ * @author     A.Menon
+ *---------------------------------------------------------------------------*/
+void LEMLINE::reBinParam(int zBin, int cBin){
+
+    ZBinSize = zBin;
+    CBinSize = cBin;
+    Cstep    = 1. /(CBinSize -1.0);
+    Zstep    = 1. /(ZBinSize -1.0);
+    setEquilFlameTemp_Z();
+    setEquilY_Z();
+    initTcondZ ();
+    initTcondZC();
+    initYcondZ ();
+    initYcondZC();
+}

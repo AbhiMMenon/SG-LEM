@@ -1,0 +1,45 @@
+
+#file:          "MECH/grimech30.cti"
+#file:          "MECH/mixtureZ66-C3H8.xml"
+#file:          "MECH/drm22.cti"
+#file:          "MECH/Peters_C3H8.cti"
+#file:          "MECH/2STEP_mech.cti"
+#file:          "MECH/JL_C3H8.cti"
+#file:          "MECH/BFER/BFER.xml"
+file:          "MECH/sk17/chem.yaml"
+
+# stream parmaeters
+#fuelStream:    "C3H8:1"
+fuelStream:    "CH4:1"
+oxStream:      "O2:1,N2:3.76"
+fuelStreamT:    300
+oxStreamT:      300
+pressure:       101325 #pa
+
+
+
+# conditioning parmeters
+cBinSize:      200
+zBinSize:      12 # Re_bin size
+
+
+# coeffs for Bilger mixture fraction calculation
+#gammas: [5./3., 5./8., -1.0, 0.0]
+gammas: [1.66666666, 0.625, -1.0, 0.0]
+
+# simulation parameters
+velScale:       00.0
+
+tLES:           100e-5
+tStep:          5e-6
+
+domLength:      1e-3
+phi:            0.8
+res:    25e-6
+
+combFlag:       true
+
+solveFast:      false #fast solver
+
+
+

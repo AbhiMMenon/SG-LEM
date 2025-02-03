@@ -1,0 +1,50 @@
+include $(LEMCANTERA)/Cantera.mak
+
+LIB     = LEM
+EXE     = lem
+
+CC	= gcc
+CXX	= g++ 
+RM	= rm -f
+CCFLAGS	= -g
+
+DEBUGFLAGS = $(CANTERA_INCLUDES) -I/home/abhi/Downloads/fmt/include -O0  -g -ggdb -march=native -fPIC
+CPPFLAGS   = $(CANTERA_INCLUDES) -I/home/abhi/Downloads/fmt/include -O2  -march=native -fPIC # -fsanitize=address
+LDFLAGS	=-L. #-fsanitize=address
+LDLIBS	=-l$(LIB) $(CANTERA_TOTAL_LIBS)
+
+
+LIBOBJS = LEM.o \
+	  LEMLine.o \
+	  RILEM.o \
+	  splicing.o \
+	  CellData.o
+
+#	matrix.o # for later use
+
+#TESTOBJS = lemMixingLayerTest.o
+#TESTOBJS = lemPremixedFlameTest.o
+
+OBJS= $(subst .cpp,.o,$(SRCS))
+
+all: shared
+
+
+lib: $(LIBOBJS)
+	ar rs lib$(LIB).a $(LIBOBJS)
+	ranlib lib$(LIB).a
+
+shared: $(LIBOBJS)
+	g++ -shared -o lib$(LIB).so $(LIBOBJS)
+
+%.o: %.cpp
+	g++ $(CPPFLAGS) -c -o $@ $<
+
+debug: CPPFLAGS=$(DEBUGFLAGS)
+debug: shared
+
+clean:
+	$(RM) $(EXE) $(TESTOBJS) $(LIBOBJS) lib$(LIB).a lib$(LIB).so
+
+dist-clean: clean
+	$(RM) *~ 
