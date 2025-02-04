@@ -1,13 +1,31 @@
 # Installation
 
-Requirements:
-1. OpenFOAM-9
-2. gcc (not lower than 5.x)
-3. yaml-cpp (optional)
-4. Cantera 3.0.0
-5. Cmake (minimum version 3.5.0)
+## Requirements
 
-## Environment variables
+1. OpenFOAM-9
+    - sourced environment variables, e.g., `$FOAM_LIBBIN` etc.
+    - wmake
+2. gcc (not lower than 5.x)
+3. GNU make (tested 4.3 and lower)
+4. cmake (minimum version 3.5.0)
+5. A working installation of Cantera 3.0.0 or higher
+
+    - Tested with installation from source, see https://github.com/Cantera/cantera/releases, 
+    and instructions in included file `INSTALL.md` or https://cantera.org/stable/develop/index.html
+
+    - Or from PPA (not tested), see https://cantera.org/stable/install/ubuntu.html#sec-install-ubuntu
+
+    - Either way, the exact file paths to `/include` and `/lib` folders in the installation are required.
+6. boost library (tested version 1.83)
+7. OpenMPI
+6. yaml-cpp (optional)
+
+
+## Initial
+
+`git clone NEW REP` to a directory `{XYZ}` of your choice and `cd {XYZ}/SG-LEM` 
+
+## 1. Environment variables
 
 1. Set root variable to current working directory
 
@@ -15,7 +33,7 @@ Requirements:
 
 2. Edit the sourceRC file for just the variables `$CANTERAINCL` and  `$CANTERALIB`. These should
     contain the exact paths to `/include` and `/lib` folders of your Cantera
-    installation.
+    installation. See **Requirements** above
 
         vim etc/sourceRC
         
@@ -24,7 +42,12 @@ Requirements:
 
         source etc/sourceRC
 
-## LEM library
+4. Optional
+
+        echo source $(pwd)/etc/sourceRC >> ~/.bashrc
+        
+
+## 2. LEM library
 
 Requires CMake (ver 3.5 minimum)
 
@@ -37,7 +60,9 @@ Requires CMake (ver 3.5 minimum)
     cd ..
     cd ..
 
-## (optional) 1D splicing-stabilised flame (needs yaml-cpp)
+This installs both the shared (`libLEM.so`) and static (`libLEM.a`) versions of the LEM library.
+
+## 3. (optional) 1D splicing-stabilised flame, needs yaml-cpp
 
 1D flamelet subject to triplet-map stirring, stabilized in the domain by
 splicing operations. Note that Cantera 3.0.0 requires chemistry files in the
@@ -73,16 +98,16 @@ Exit directory
 
 
 
-## ParMGridGen 1.0
+## 4. ParMGridGen 1.0
 
-The library used to generate super-grids though mesh agglomeration. First we need to compile the serial version of the library.
+The library used to generate super-grids though mesh agglomeration. We need to compile the serial version of the library.
 
     cd trunk/ParMGridGen-1.0/
     make serial
     cd ..
     cd ..
 
-## dbns library
+## 5. dbns library
 
 `OpenFOAM` library that uses `ParMGridGen-1.0` (serial) for coarse-graining CFD meshes. Tested for meshes made with `blockMesh` and also for those made with Ansys ICEM. *Should* work on any METIS format mesh.
 
@@ -103,9 +128,9 @@ The library used to generate super-grids though mesh agglomeration. First we nee
 4. `libdbns` will be installed in `$(FOAM_USER_LIBBIN)`
 
 
-## (optional) userField library function
+## 6. (optional) userField library function
 
-Major bug in RMS  calculated by OpenFOAM leads to negative values. Use this if using an earlier version of OpenFOAM-9 compiled from source, i.e, before bug-fix/patch.
+Major bug in RMS  calculated by OpenFOAM leads to negative values. Use this if using an earlier version of OpenFOAM-9 compiled from source, i.e, before bug-fix/patch. Library functions can be switched on during runtime.
 
 1. Ensure `$FOAM` and `sourceRC` environment variables are sourced, as before
 2. Ensure `$(FOAM_USER_LIBBIN)` is valid, as before
@@ -116,24 +141,64 @@ Major bug in RMS  calculated by OpenFOAM leads to negative values. Use this if u
         cd ..
         cd ..
 
-## Compile error -- "call of overloaded XX( ) is ambiguious"
 
-The following lines have to be modified in Cantera header file `Func1.h`, for Cantera 3.0.0 and earlier releases, to avoid overload ambiguity, likely due to FOAM or boost using similarly named functions.
-Might need `sudo` privilege, i.e, `sudo bash`
+## 7. Compile error -- "call of overloaded XX( ) is ambiguious"
 
-    sed -ie "s/return sin/return std::sin/g" $CANTERAINCL/cantera/numerics/Func1.h
-    sed -ie "s/return cos/return std::cos/g" $CANTERAINCL/cantera/numerics/Func1.h
-    sed -ie "s/return pow/return std::pow/g" $CANTERAINCL/cantera/numerics/Func1.h
-    sed -ie "s/return exp/return std::exp/g" $CANTERAINCL/cantera/numerics/Func1.h
-    sed -ie "s/return log/return std::log/g" $CANTERAINCL/cantera/numerics/Func1.h
+If we try to compile the SG-LEM solvers, the above error is encountered. The following lines have to be modified in Cantera header file `Func1.h`, for Cantera 3.0.0 and earlier releases, to avoid overload ambiguity. This is due to either FOAM or the `boost` library using similarly named functions.  May require `sudo` privileges, i.e, `sudo bash`
 
-### Overload ambiguious function in boost
+    sed -i "s/return sin/return std::sin/g" $CANTERAINCL/cantera/numerics/Func1.h
+    sed -i "s/return cos/return std::cos/g" $CANTERAINCL/cantera/numerics/Func1.h
+    sed -i "s/return pow/return std::pow/g" $CANTERAINCL/cantera/numerics/Func1.h
+    sed -i "s/return exp/return std::exp/g" $CANTERAINCL/cantera/numerics/Func1.h
+    sed -i "s/return log/return std::log/g" $CANTERAINCL/cantera/numerics/Func1.h
+
+### 7.1 Overload ambiguious function in boost
 
 For the same reason as the above, needed for `boost` version 1_83. Root privilege is required if `boost` headers are in `/usr/`
 
-    sudo sed -ie "115s/sqrt/std::sqrt/" /usr/include/boost/math/special_functions/detail/bernoulli_details.hpp
-    
-    
+    sudo sed -i "115s/sqrt/std::sqrt/" /usr/include/boost/math/special_functions/detail/bernoulli_details.hpp
 
-    sed -ie "s/return sin/return std::sin/g" $CANTERAINCL/cantera/numerics/Func1.h
+
+## 8. Premixed SG-LEM solver
+
+1. Ensure `$FOAM` and `sourceRC` environment variables are sourced, as before
+2. Ensure `$(FOAM_USER_APPBIN)` is valid,
+
+        ls  $FOAM_USER_APPBIN
+
+    else
+
+        mkdir -p $FOAM_USER_APPBIN
+
+3. ***Required:*** `ParMGridGen-1.0`, `dbns`, `libLEM.so` (shared) in the above steps.
+        
+4. Change dir
+
+        cd trunk/foam9/SGLEMPFoam
+
+4. Check if 
+
+        echo $MPI_ARCH_PATH
+
+    or (for clusters using cent-os or similar)
+        
+        echo $EBROOTMPI
+    give valid paths. If not, check if MPI module has been loaded, or modifiy `Make/options` line 23 or 24 using the  the correct path for MPI given by:
+
+        mpicc --showme:compile
+
+    Do not forget the `\` at the end of the path.
+
+3. Compile SG-LEM premixed solver
+
+        wmake
+        cd ..
+        cd ..
+        cd ..
+
+The premixed SG-LEM solver should be  installed in `$FOAM_USER_APPBIN`.
+
+## 9. Non-premixed SG-LEM solver
+
+ The procedure for the non-premixed solver `SGLEMFoam` is identical. It can be found in `trunk/foam9/SGLEMPFoam/SGLEMFoam`
 
