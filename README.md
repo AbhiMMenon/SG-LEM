@@ -9,19 +9,20 @@ Requirements:
 
 ## Environment variables
 
-1. Edit the sourceRC file 
+1. Set root variable to current working directory
 
-        vim etc/sourceRC
-        
-    for just the variables `$CANTERAINCL` and  `$CANTERALIB`. These should
+       sed -i -e 's|/home/abhi/SG-LEM|'`pwd`'|g' etc/sourceRC
+
+2. Edit the sourceRC file for just the variables `$CANTERAINCL` and  `$CANTERALIB`. These should
     contain the exact paths to `/include` and `/lib` folders of your Cantera
     installation.
 
+        vim etc/sourceRC
         
 
-2. Soure the RC file in trunk
+3. Soure the RC file in trunk
 
-        . trunk/sourceRC
+        source etc/sourceRC
 
 ## LEM library
 
@@ -45,16 +46,26 @@ splicing operations. Note that Cantera 3.0.0 requires chemistry files in the
 mechanism for this test case, but not the others listed in the `input.yaml`
 file.
 
-    cd cases/spliceFlameSingle/
-    cmake -B build
-    cd build
-    make
-    cd ..
+1. Compile solver       
 
-Test using 
+        cd cases/spliceFlameSingle/ 
+        cmake -B build 
+        cd build 
+        make 
+        cd ..
 
-    ./build/spliceFlame
+
+2. Test using 
+
+        mkdir  results 
+        ./build/spliceFlame
     
+3. Results can be visualized using gnuplot
+
+         gnuplot plot.gnu
+         evince flame.pdf
+
+Exit directory 
 
     cd ..
     cd ..
@@ -76,9 +87,9 @@ The library used to generate super-grids though mesh agglomeration. First we nee
 `OpenFOAM` library that uses `ParMGridGen-1.0` (serial) for coarse-graining CFD meshes. Tested for meshes made with `blockMesh` and made with Ansys ICEM.
 
 1. Ensure `OpenFOAM` environment variables are sourced, for `wmake`
-2. Ensure `$(FOAM_USER_LIBBIN)` is set
+2. Ensure `$(FOAM_USER_LIBBIN)` points to a folder
 
-        echo  $FOAM_USER_LIBBIN
+        ls  $FOAM_USER_LIBBIN
 
     if not 
 
@@ -87,6 +98,27 @@ The library used to generate super-grids though mesh agglomeration. First we nee
         wmake lib
         cd ..
         cd ..
+        cd ..
 
 4. `libdbns` will be installed in `$(FOAM_USER_LIBBIN)`
+
+
+## (optional) userField library function
+
+Minor bug in RMS  calculated by OpenFOAM leads to negative values. Use this if using an earlier version of OpenFOAM-9 compiled from source before bug fix.
+
+1. Ensure `OpenFOAM` environment variables are sourced, as before
+2. Ensure `$(FOAM_USER_LIBBIN)` is valid, as before
+
+        cd trunk/foam9/userField
+        wmake lib
+        cd ..
+        cd ..
+        cd ..
+
+## Minor Cantera bugs
+
+The following lines have to be corrected in Cantera header files distributed with Cantera 3.0.0 (and earlier releases) to avoid overload ambiguity, likely due to FOAM or boost using similarly named functions.
+
+
 
