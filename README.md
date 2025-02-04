@@ -1,6 +1,12 @@
-# Installation
+# Notes/TODO
 
-Test
+- 0D reactor initilazation for premixed solver no longer works, this is needed for the backward-step case, but not for the Volvo case. This is due to the change to Cantera-3.0.0
+- OpenFOAM test cases to be added
+- Solver description
+
+
+
+# Installation
 
 ## Requirements
 
@@ -23,9 +29,9 @@ Test
 6. yaml-cpp (optional)
 
 
-## Initial
+## 0. git clone
 
-`git clone NEW REP` to a directory `{XYZ}` of your choice and `cd {XYZ}/SG-LEM` 
+`git clone https://github.com/AbhiMMenon/SG-LEM.git` to a directory `{XYZ}` of your choice and `cd {XYZ}/SG-LEM` 
 
 ## 1. Environment variables
 
