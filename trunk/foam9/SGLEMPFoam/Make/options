@@ -19,18 +19,14 @@ EXE_INC = \
     -I$(LIB_SRC)/surfMesh/lnInclude \
     -I$(LEMINCL) \
     -I../dbns/lnInclude\
-    -I$(CANTERAINCL) \
+    -I$(CANTERAINCL)/ \
     -I$(MPI_ARCH_PATH)/include \
-    -I/usr/include/openmpi
+    -I$(EBROOTMPI)/include \
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -L$(PARMGRIDGEN) \
-    -L$(LEMLIB) \
-    -I$(MPI_ARCH_PATH)/lib \
     -Wl,-rpath=$(LEMLIB) \
-    -L$(DBNS) \
-    -I$(CANTERALIB) \
     -lfluidThermophysicalModels \
     -lspecie \
     -lchemistryModel \
@@ -49,10 +45,9 @@ EXE_LIBS = \
     -lmeshTools \
     -lsampling \
     -ldbns\
+    -L$(LEMLIB) \
     -lLEM \
-    -lcantera \
-    -lsundials_cvodes \
-    -lsundials_nvecserial \
-    -pthread \
+    -L$(CANTERALIB)/ \
+    -lcantera_shared \
     -lmpi_cxx\
     -lm
