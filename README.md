@@ -20,7 +20,7 @@ Requirements:
         vim etc/sourceRC
         
 
-3. Soure the RC file in trunk
+3. Source the file
 
         source etc/sourceRC
 
@@ -84,9 +84,9 @@ The library used to generate super-grids though mesh agglomeration. First we nee
 
 ## dbns library
 
-`OpenFOAM` library that uses `ParMGridGen-1.0` (serial) for coarse-graining CFD meshes. Tested for meshes made with `blockMesh` and made with Ansys ICEM.
+`OpenFOAM` library that uses `ParMGridGen-1.0` (serial) for coarse-graining CFD meshes. Tested for meshes made with `blockMesh` and also for those made with Ansys ICEM. *Should* work on any METIS format mesh.
 
-1. Ensure `OpenFOAM` environment variables are sourced, for `wmake`
+1. Ensure `$FOAM` environment variables are sourced, for `wmake`, as well as `sourceRC`
 2. Ensure `$(FOAM_USER_LIBBIN)` points to a folder
 
         ls  $FOAM_USER_LIBBIN
@@ -105,9 +105,9 @@ The library used to generate super-grids though mesh agglomeration. First we nee
 
 ## (optional) userField library function
 
-Minor bug in RMS  calculated by OpenFOAM leads to negative values. Use this if using an earlier version of OpenFOAM-9 compiled from source before bug fix.
+Major bug in RMS  calculated by OpenFOAM leads to negative values. Use this if using an earlier version of OpenFOAM-9 compiled from source, i.e, before bug-fix/patch.
 
-1. Ensure `OpenFOAM` environment variables are sourced, as before
+1. Ensure `$FOAM` and `sourceRC` environment variables are sourced, as before
 2. Ensure `$(FOAM_USER_LIBBIN)` is valid, as before
 
         cd trunk/foam9/userField
@@ -116,9 +116,24 @@ Minor bug in RMS  calculated by OpenFOAM leads to negative values. Use this if u
         cd ..
         cd ..
 
-## Minor Cantera bugs
+## Compile error -- "call of overloaded XX( ) is ambiguious"
 
-The following lines have to be corrected in Cantera header files distributed with Cantera 3.0.0 (and earlier releases) to avoid overload ambiguity, likely due to FOAM or boost using similarly named functions.
+The following lines have to be modified in Cantera header file `Func1.h`, for Cantera 3.0.0 and earlier releases, to avoid overload ambiguity, likely due to FOAM or boost using similarly named functions.
+Might need `sudo` privilege, i.e, `sudo bash`
 
+    sed -ie "s/return sin/return std::sin/g" $CANTERAINCL/cantera/numerics/Func1.h
+    sed -ie "s/return cos/return std::cos/g" $CANTERAINCL/cantera/numerics/Func1.h
+    sed -ie "s/return pow/return std::pow/g" $CANTERAINCL/cantera/numerics/Func1.h
+    sed -ie "s/return exp/return std::exp/g" $CANTERAINCL/cantera/numerics/Func1.h
+    sed -ie "s/return log/return std::log/g" $CANTERAINCL/cantera/numerics/Func1.h
 
+### Overload ambiguious function in boost
+
+For the same reason as the above, needed for `boost` version 1_83. Root privilege is required if `boost` headers are in `/usr/`
+
+    sudo sed -ie "115s/sqrt/std::sqrt/" /usr/include/boost/math/special_functions/detail/bernoulli_details.hpp
+    
+    
+
+    sed -ie "s/return sin/return std::sin/g" $CANTERAINCL/cantera/numerics/Func1.h
 
