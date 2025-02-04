@@ -16,9 +16,14 @@ if(true){
 
         std::vector<double> BUFF(cBinSize*RSIZE,-100);
         if(Pstream::myProcNo()==0){
-            if(initMatrices == "zeroD")
-                lemLines[0].initScalarC_0D();
-            else if(initMatrices == "read")
+
+         // if(initMatrices == "zeroD") 
+         //     lemLines[0].initScalarC_0D();
+         // NOTE: This function is no longer functional since the move to Cantera 3.0
+         // It is needed for the first test-case (backward-facing step) but not for the Volvo case
+         // else if(initMatrices == "read")
+            
+            if(initMatrices == "read")
                 lemLines[0].initScalarC_read();
             file.open("init1.dat");
             lemLines[0].writeCProps();
