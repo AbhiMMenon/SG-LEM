@@ -15,6 +15,6 @@ set(source_dir "${PROJECT_SOURCE_DIR}/")
 file(GLOB source_files "${source_dir}/*.cpp")
 
 add_executable(spliceFlame  ${source_files})
-target_link_libraries(spliceFlame PRIVATE LEMlib cantera_shared fmt Threads::Threads )
+target_link_libraries(spliceFlame PRIVATE LEM cantera_shared fmt Threads::Threads )
 
 install(TARGETS spliceFlame DESTINATION ${source_dir})
