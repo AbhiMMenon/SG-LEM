@@ -29,8 +29,8 @@
             }
 
             // -- formation enthalpy
-            oj.gas.setState_TPY(298.15, 101325, y2.data());
-            double hForm = oj.gas.enthalpy_mass();
+            oj.gas->setState_TPY(298.15, 101325, y2.data());
+            double hForm = oj.gas->enthalpy_mass();
 
             // -- sensible enthalpy for Foam
             he[celli] = H_Tot[celli] - hForm;
@@ -50,8 +50,8 @@
                 YsPatch[i] = Yi.boundaryField()[patchx][facex];
             }
             if(pT.fixesValue()){
-                oj.gas.setState_TPY(pT[facex], pP[facex], YsPatch.data());
-                pH[facex] = oj.gas.enthalpy_mass();
+                oj.gas->setState_TPY(pT[facex], pP[facex], YsPatch.data());
+                pH[facex] = oj.gas->enthalpy_mass();
             }
         }
       }
@@ -69,8 +69,8 @@
                 volScalarField& Yi = Y[i];
                 YsPatch[i] = Yi.boundaryField()[patchx][facex];
             }
-            oj.gas.setState_TPY(298.15, 101325, YsPatch.data());
-            ph[facex] = pH[facex] - oj.gas.enthalpy_mass();
+            oj.gas->setState_TPY(298.15, 101325, YsPatch.data());
+            ph[facex] = pH[facex] - oj.gas->enthalpy_mass();
         }
     }
 

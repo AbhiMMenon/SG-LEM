@@ -12,11 +12,11 @@ if(Pstream::myProcNo()==0) {
 int fileNo = 0;
 
 
-// LEM gas object
+// LEM gas->object
 LEM oj(fname);
 int nSpecies = oj.ns;
 
-// -- gas properties
+// -- gas->properties
   oj.fuelStream       = fuelStream;
   oj.oxStream         = oxStream;
   oj.fuelStreamT      = fuelStreamT;
@@ -30,7 +30,7 @@ srand(time(NULL));          // seed for RNG
 std::vector<int> pList(prodSpecies.size());
 Info << " The positions are: ";
 forAll(Yprod, i){
-    pList[i] = oj.gas.speciesIndex(prodSpecies[i]);
+    pList[i] = oj.gas->speciesIndex(prodSpecies[i]);
     Info << pList[i] << " ";
 }
 

@@ -1,0 +1,13 @@
+## EDIT the filepaths for the following two for your Cantera installation
+
+export CANTERAINCL="/home/abhi/canteraInstall/include" 
+export CANTERALIB="/home/abhi/canteraInstall/lib" 
+
+
+
+# --  THE following need not be edited --
+
+SG_LEM_ROOT=/home/abhi/SG-LEM
+export PARMGRIDGEN=$SG_LEM_ROOT"/trunk/ParMGridGen-1.0/"
+export LEMLIB=$SG_LEM_ROOT"/trunk/lean-LEM-for-combustion/lib/"
+export LEMINCL=$SG_LEM_ROOT"/trunk/lean-LEM-for-combustion/"

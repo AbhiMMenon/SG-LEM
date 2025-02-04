@@ -16,7 +16,7 @@ std::vector<LEMLINE> lemLinesCopy;
 
 std::vector<int> resMax(nCells);
 std::vector<bool> uniLine(nCells);
-int indO2 = oj.gas.speciesIndex("O2");
+int indO2 = oj.gas->speciesIndex("O2");
 
 // create lemLines, initialize memory and push into the vector. Good to check
 // memory leaks etc. here

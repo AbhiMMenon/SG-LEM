@@ -12,8 +12,8 @@ forAll(H_Tot, cellx){
   }
 
   // initialiation
-  oj.gas.setState_TPY(298.15,101325, y2.data());
-  H_Tot[cellx] = he[cellx] + oj.gas.enthalpy_mass();
+  oj.gas->setState_TPY(298.15,101325, y2.data());
+  H_Tot[cellx] = he[cellx] + oj.gas->enthalpy_mass();
 
 }
 
@@ -32,8 +32,8 @@ forAll(H_Tot.boundaryField(), patchx) {
           volScalarField& Yi = Y[i];
           YsPatch[i] = Yi.boundaryField()[patchx][facex];
       }
-      oj.gas.setState_TPY(298.15,101325, YsPatch.data());
-      pH[facex] = ph[facex] + oj.gas.enthalpy_mass();
+      oj.gas->setState_TPY(298.15,101325, YsPatch.data());
+      pH[facex] = ph[facex] + oj.gas->enthalpy_mass();
   }
 }
 
@@ -49,8 +49,8 @@ forAll(T.boundaryField(), patchx) {
               volScalarField& Yi = Y[i];
               YsPatch[i] = Yi.boundaryField()[patchx][facex];
           }
-          oj.gas.setState_TPY(pT[facex],pP[facex], YsPatch.data());
-          pH[facex] = oj.gas.enthalpy_mass();
+          oj.gas->setState_TPY(pT[facex],pP[facex], YsPatch.data());
+          pH[facex] = oj.gas->enthalpy_mass();
       }
 }
 H_Tot.correctBoundaryConditions();

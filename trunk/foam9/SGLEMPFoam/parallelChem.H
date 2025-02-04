@@ -95,7 +95,7 @@ for(kx = 0; kx < DISTsizes[thisProc];kx+=nScalar){
     for (int s = 0; s <nSpecies; ++s) {
       y[IY0+s] = RECV[kx + s + 3];;
     }
-    oj.gas.setState_TPY(y[IT], y[IP], y + IY0); // check if this gas state is relalizable or we made an error somewhere
+    oj.gas->setState_TPY(y[IT], y[IP], y + IY0); // check if this gas->state is relalizable or we made an error somewhere
     CVodeReInit(oj.cvode_mem,time, oj.y);
     CVode(oj.cvode_mem, time+tStep, oj.y, &tret, CV_NORMAL);
 
