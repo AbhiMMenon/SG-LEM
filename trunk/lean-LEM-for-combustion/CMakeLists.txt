@@ -15,7 +15,7 @@ set(source_dir "${PROJECT_SOURCE_DIR}/")
 file(GLOB source_files "${source_dir}/*.cpp")
 list(REMOVE_ITEM source_files "lemPremixedFlameTest.cpp")
 
-add_library(LEM STATIC ${source_files})
+add_library(LEM STATIC SHARED ${source_files})
 
 target_link_libraries(LEM cantera_shared fmt Threads::Threads)
 #add_executable(test1  lemPremixedFlameTest.cpp)
