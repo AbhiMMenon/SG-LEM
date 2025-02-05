@@ -21,12 +21,12 @@ if(true){
         std::vector<double> BUFF(zBinSize*cBinSize*RSIZE,-100);
         std::vector<int> BUFF_found(zBinSize*cBinSize,0);
         if(Pstream::myProcNo()==0){
-            if(initMatrices == "zeroD"){
-                lemLines[0].initScalarZC_0D(flamLimitRich);
-                file.open("init1.dat");
-                lemLines[0].writeZCProps();
-                file.close();
-            }
+          //if(initMatrices == "zeroD"){
+          //    lemLines[0].initScalarZC_0D(flamLimitRich);
+          //    file.open("init1.dat");
+          //    lemLines[0].writeZCProps();
+          //    file.close();
+          //}
             if(initMatrices == "read"){
                 Info << "Reading init files";
                 lemLines[0].initScalarZC_read();

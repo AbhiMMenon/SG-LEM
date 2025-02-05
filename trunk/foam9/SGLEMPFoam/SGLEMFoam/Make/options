@@ -1,5 +1,5 @@
 EXE_INC = \
-          -O0 -ggdb -DFULLDEBUG\
+    -std=c++17 \
     -I$(LIB_SRC)/MomentumTransportModels/momentumTransportModels/lnInclude \
     -I$(LIB_SRC)/MomentumTransportModels/compressible/lnInclude \
     -I$(LIB_SRC)/ThermophysicalTransportModels/lnInclude \
@@ -17,26 +17,17 @@ EXE_INC = \
     -I$(LIB_SRC)/meshTools/lnInclude \
     -I$(LIB_SRC)/sampling/lnInclude\
     -I$(LIB_SRC)/surfMesh/lnInclude \
-    -I$(LEMLIB) \
-    -I../\
+    -I$(LEMINCL) \
     -I../../dbns/lnInclude\
-    -I$(LEMCANTERA) \
-    -I$(LEMCANTERA)/thermo \
-    -I$(LEMCANTERA)/base \
-    -I$(LEMCANTERA)/kinetics \
-    -I$(LEMCANTERA)/transport \
-    -I$(LEMSUNDIALS) \
-    -I/usr/local/include \
-    -I/usr/include/openmpi
+    -I.. \
+    -I$(CANTERAINCL)/ \
+    -I$(MPI_ARCH_PATH)/include \
+    -I$(EBROOTMPI)/include \
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -L$(PARMGRIDGEN) \
-    -L$(LEMLIB) \
     -Wl,-rpath=$(LEMLIB) \
-    -L$(DBNS) \
-    -L$(LEMSUNDIALS) \
-    -L$(LEMCANTERA)/../../lib \
     -lfluidThermophysicalModels \
     -lspecie \
     -lchemistryModel \
@@ -55,10 +46,9 @@ EXE_LIBS = \
     -lmeshTools \
     -lsampling \
     -ldbns\
+    -L$(LEMLIB) \
     -lLEM \
-    -lcantera \
-    -lsundials_cvodes \
-    -lsundials_nvecserial \
-    -pthread \
+    -L$(CANTERALIB)/ \
+    -lcantera_shared \
     -lmpi_cxx\
     -lm
