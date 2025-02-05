@@ -188,7 +188,7 @@ void LEMLINE::initZCMemory()
         }
     }
 
- // ySol.resize(lem.combustor.neq());
+    ySol.resize(lem.combustor.neq());
 }
 
 /**---------------------------------------------------------------------------
