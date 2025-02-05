@@ -104,12 +104,6 @@ Exit directory
     cd ..
     cd ..
 
-**NOTE**: If using openFOAM was compiled with gcc > 10.x,  `functionObjects` can show an error 
-    
-    error in IOstream "OSHA1stream.sinkFile_"
-
-during runtime. See commit https://github.com/OpenFOAM/OpenFOAM-9/commit/b0c15bebd37142f3902901ed5e9a60e33ed456eb 
- for the fix if it was compiled from an pre-patch source file.
 
 
 
@@ -160,6 +154,12 @@ bug-fix/patch. Library functions can be switched on during runtime.
         cd ..
         cd ..
 
+**NOTE**: If using openFOAM was compiled with gcc > 10.x,  `functionObjects` can show an error 
+    
+    error in IOstream "OSHA1stream.sinkFile_"
+
+during runtime. See commit https://github.com/OpenFOAM/OpenFOAM-9/commit/b0c15bebd37142f3902901ed5e9a60e33ed456eb 
+ for the fix if FOAM was compiled from an pre-patch source.
 
 ## 7. Compile error -- "call of overloaded XX( ) is ambiguous"
 
