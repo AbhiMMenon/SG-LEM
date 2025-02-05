@@ -1,0 +1,43 @@
+# cti file
+#file:          "grimech30.cti"
+file:          "../spliceFlameSingle/MECH/sk17/chem.yaml"
+#file:          "BFER/BFER.xml"
+#file:          "JL/JL.xml"
+
+# stream parmaeters
+#fuelStream:    "C3H8:1"
+fuelStream:    "CH4:1"
+oxStream:      "O2:1,N2:3.76"
+fuelStreamT:    300
+oxStreamT:      300
+pressure:       101325 #pa
+
+
+
+# conditioning parmeters
+zBinSize:  120
+cBinSize:  100
+
+# splice
+spliceFreq:     300 # NOT IN USE
+
+# coeffs for Bilger mixture fraction calculation
+#gammas: [5./3., 5./8., -1.0, 0.0]
+gammas: [1.66666666, 0.625, -1.0, 0.0]
+
+# simulation parameters
+NLEM:        800
+ZMax:       0.15
+
+tLES:           1000e-5
+tStep:          1e-5
+
+domLength:      2e-3
+res:    50e-6
+
+combFlag:       true
+
+solveFast:      true #fast solver
+
+
+

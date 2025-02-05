@@ -1,0 +1,15 @@
+Data is generated: 'November 20, 2023'
+Mechanism used: F1D_JONES_KT1.cti
+
+	Warning : 'CH4' fit error is larger than tolerance.
+	Log-polynomial mu error: 0.011638663047612198
+	Log-polynomial kappa error: 0.015994218740184394
+
+	Warning : 'CH4' fit error is larger than tolerance.
+	Polynomial mu error: 0.011638663047612198
+	Polynomial kappa error: 0.015994218740184394
+
+	Warning : 'CO' fit error is larger than tolerance.
+	Sutherland mu error: 0.013814890120109781
+	Sutherland STD: array([4.84423817e-09, 5.68505817e+00])
+	Euken kappa error: 0.02108230008449611

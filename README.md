@@ -82,7 +82,7 @@ file.
 
 1. Compile solver       
 
-        cd cases/spliceFlameSingle/ 
+        cd CASES/spliceFlameSingle/ 
         cmake -B build 
         cd build 
         make 
