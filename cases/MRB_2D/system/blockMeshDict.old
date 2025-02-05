@@ -1,0 +1,189 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+convertToMeters 1e-3;
+
+h 40;
+xmin -820;   // -8.8*h
+xtip -34.64; // -0.866*h
+xmax 680;    // 16.2*h
+ymin -60;    // -1.5*h
+ymax 60;
+zmin -20;
+zmax 20;
+
+vertices
+(
+    ($xmin  $ymin $zmin) // 0
+    ($xtip  $ymin $zmin) // 1
+    (0      $ymin $zmin) // 2
+    ($xmax  $ymin $zmin) // 3
+    (0        -20 $zmin) // 4
+    ($xmax    -20 $zmin) // 5
+    ($xmin      0 $zmin) // 6
+    ($xtip      0 $zmin) // 7
+    (0         20 $zmin) // 8
+    ($xmax     20 $zmin) // 9
+    ($xmin  $ymax $zmin) // 10
+    ($xtip  $ymax $zmin) // 11 
+    (0      $ymax $zmin) // 12 
+    ($xmax  $ymax $zmin) // 13 
+
+    ($xmin  $ymin $zmax) // 14
+    ($xtip  $ymin $zmax) // 15
+    (0      $ymin $zmax) // 16
+    ($xmax  $ymin $zmax) // 17
+    (0        -20 $zmax) // 18
+    ($xmax    -20 $zmax) // 19
+    ($xmin      0 $zmax) // 20
+    ($xtip      0 $zmax) // 21
+    (0         20 $zmax) // 22
+    ($xmax     20 $zmax) // 23
+    ($xmin  $ymax $zmax) // 24
+    ($xtip  $ymax $zmax) // 25
+    (0      $ymax $zmax) // 26
+    ($xmax  $ymax $zmax) // 27
+
+
+    (0     0 $zmin) // 28
+    ($xmax 0 $zmin) // 29
+    (0     0 $zmax) // 30
+    ($xmax 0 $zmax) // 31
+);
+
+blocks
+(
+    hex (0 1 7 6 14 15 21 20)    (40  36 20) edgeGrading ( 0.1 0.1 0.1 0.1   
+                                                           1.0 0.1 0.1 1.0  
+                                                           1.0 1.0 1.0 1.0) // 0
+    hex (1 2 4 7 15 16 18 21)    (20  36 20) simpleGrading (0.5 .1 1) //1
+
+    hex (2 3 5 4 16 17 19 18)    (110 36 20) edgeGrading ( 15.0 15.0 15.0 15.0   
+                                                           0.1 1.0 1.0 0.1  
+                                                           1.0 1.0 1.0 1.0) // 2
+    
+
+ // hex (4 5 9 8 18 19 23 22)    (110 100 20) simpleGrading ( 15 1 1 ) 
+    // mid blocks
+    hex (4 5 29 28 18 19 31 30)    (110 25 20) edgeGrading ( 15 15 15 15 10 1 1 10 1 1 1 1 ) 
+    hex (28 29 9 8 30 31 23 22)    (110 25 20) edgeGrading ( 15 15 15 15 .1 1 1 .1 1 1 1 1 ) 
+    
+    
+    hex (6 7 11 10 20 21 25 24)  (40  36 20) edgeGrading ( 0.1  0.1  0.1 0.1   1.0 10.0 10.0 1.0  1.0 1.0 1.0 1.0) 
+    hex (7 8 12 11 21 22 26 25)  (20  36 20) simpleGrading (0.5 10 1) //V
+    hex (8 9 13 12 22 23 27 26)  (110 36 20) edgeGrading ( 15  15  15  15  10.0 1.0 1.0 10.0  1.0 1.0 1.0 1.0) 
+
+);
+
+edges
+(
+);
+
+boundary
+(
+
+  triangle
+  {
+  	type wall;
+  	faces
+  	(
+  	    (7 8 22 21)
+  	    (8 28 30 22)
+  	    (28 4 18 30)
+  	    (7 4 18 21)
+  	);
+  }
+  
+  inlet
+  {
+  	type patch;
+  	faces
+  	(
+  	    (0 14 20 6)
+  	    (6 20 24 10)
+  	);
+  }
+  
+  outlet
+  {
+  	type patch;
+  	faces
+  	(
+  	    (3 17 19 5)
+  	    (5 19 31 29)
+  	    (9 23 31 29)
+  	    (9 23 27 13)
+  	);
+  }
+  
+  walls
+  {
+  	type wall;
+  	faces
+  	(
+  	    (0 1 15 14) // bot
+  	    (1 2 16 15)
+  	    (2 3 17 16)
+  	    (10 11 25 24) // top
+  	    (11 12 26 25)
+  	    (12 13 27 26)
+  	);
+  }
+  
+      cyc_half0
+  {
+      type cyclic;
+      neighbourPatch cyc_half1;
+  
+  	faces
+  	(
+  	    (0 1 7 6)
+  	    (1 2 4 7)
+  	    (2 3 5 4)
+  	    (4 5 29 28)
+  	    (29 28 8 9)
+  	    (6 7 11 10)
+  	    (7 8 12 11)
+  	    (8 9 13 12)
+  
+  	);
+  }
+      cyc_half1
+  {
+      type cyclic;
+      neighbourPatch cyc_half0;
+  
+  	faces
+  	(
+  
+          (14 15 21 20)
+          (15 16 18 21)
+          (16 17 19 18)
+          (18 19 31 30)
+          (31 30 22 23)
+          (20 21 25 24)
+          (21 22 26 25)
+          (22 23 27 26)
+  	);
+  }
+	
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //

@@ -1,0 +1,105 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     3.2                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      RILEMProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+
+//file                  "./chemkinGri/grimech30.xml";
+file                  "./DRM22/drm22.yaml";
+
+//file                  "./Z42/mixtureZ42-CH4.xml";
+
+// only single component CmHn for now
+fuelStream            "CH4:1";
+oxStream              "O2:1,N2:3.76";
+
+fuelStreamT             300.0;
+oxStreamT               300.0;
+
+pressure               101325;
+
+
+gammasCoeff     4(2 0.5 -1 0); // standard coeffs for CH4
+// conditioning parameters
+zBinSize                100;
+cBinSize                100;
+C_LAMBDA                 15;
+N_ETA                    10;
+
+
+// superGrid parameters
+clusterMax              10000;
+clusterMin              10000;
+
+LEMres                  24e-6;
+
+//NLEM                    10; //redundant
+//NLEM_SMAX               200; // redundant
+//NLEM_LESLEM             10;
+
+nSpark                  0;
+
+
+// under-relax factor for conditioned scalar matrices
+bFac                    1.0;
+bFacCFD                 1.0;
+
+
+
+ZMax                    0.14; //for lean non-premixed
+flamLimitLean           0.027;
+flamLimitRich           0.090;
+
+expRatioFlag            true;
+
+advanceLine             true;
+advanceFast             true;
+combFlag                true; // -- used, turns on combustion on line
+integrateScalars        true;
+wallDiffusionFlag       false;
+
+LESLEMflag              false; // false for superGrid
+
+Sc                      0.4;
+
+initLEMlines            fromZ; // fromY, fromZ 
+
+solveEE                 true;
+
+turbThresh              0; // max Re_t, set as 0 for no threshold
+stirrInput              resolved; // resolved, or SGS. 
+
+intOpt                  ZC;
+
+prodSpecies             (CO2 H2O CO OH CH4);
+Cspecies                (CO2 H2O);
+PDFmethod               Beta; // TopHat
+initMatrices            read; // zero, simple, read
+
+// C source term
+initdCdT                false;
+conditionSource         true;
+
+
+persistFlag             true; // works only with zero initMatrices
+
+//betaThresh            1e-5; //  limit Zmean to  (betaThresh < Zmean < 1.0 - betaThresh)
+betaVarThresh         1e5; // switch to delta peak if Zvar < betaVarThresh
+
+
+
+
+// ************************************************************************ //
+

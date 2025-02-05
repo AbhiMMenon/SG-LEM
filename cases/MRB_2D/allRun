@@ -1,0 +1,11 @@
+#!/bin/sh
+
+#blockMesh  #fine mesh
+#setFields
+#decomposePar -force
+
+np=$(awk '$1~/numberOfSubdomains/ {print $2}' system/decomposeParDict)
+
+echo "Running SGLEMFoam in parallel ...."
+mpirun -np $np SGLEMFoam -parallel -fileHandler collated 2>&1 | tee log.solver
+reconstructPar

@@ -1,0 +1,219 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     SGLEMFoam ;
+
+startFrom       latestTime; //latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         0.04;
+
+deltaT          4e-7;
+
+writeControl    runTime;
+
+writeInterval   0.010 //1e-4; 
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  8;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   8;
+
+runTimeModifiable true;
+
+adjustTimeStep  yes; // yes
+
+maxCo           0.3;
+
+
+// The below option requires commit
+// https://github.com/OpenFOAM/OpenFOAM-9/commit/b0c15bebd37142f3902901ed5e9a60e33ed456eb
+
+/*
+functions
+{
+    fieldAverage1
+    {
+        type            fieldAverage;
+        functionObjectLibs ("libfieldFunctionObjects.so");
+        enabled         true;
+        timeStart       .10;
+        writeControl   writeTime;
+
+        fields
+        (
+            U
+            {
+                mean        on;
+                prime2Mean  on;
+                base        time;
+            }
+
+            p
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+            rho 
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+            T
+            {
+                mean        on;
+                prime2Mean  on;
+                base        time;
+            }
+            
+            Cmean
+            {
+                mean        on;
+                prime2Mean  on;
+                base        time;
+            }
+            
+            C_LEM
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+            
+            T_LEM
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+            OH
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+            
+            CO2
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+            CO
+            {
+                mean        on;
+                prime2Mean  on;
+                base        time;
+            }
+            
+            H2O
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+           
+            C3H8
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+
+            LEM_Yprod_H2O
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+            
+            LEM_Yprod_OH
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+            
+            LEM_Yprod_CO
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+            
+            
+            LEM_Yprod_CO2
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+            
+            LEM_Y_CO2
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+            
+            LEM_Y_OH
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+            
+            LEM_Y_CO
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+            
+            
+            LEM_Y_H2O
+            {
+                mean        on;
+                prime2Mean  off;
+                base        time;
+            }
+            
+            
+            
+        );
+    }
+
+}
+
+*/
+
+
+// ************************************************************************* //

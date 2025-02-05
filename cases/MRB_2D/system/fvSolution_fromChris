@@ -1,0 +1,114 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+
+    rho
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       0;
+        relTol          0.1;
+    }
+
+    rhoFinal
+    {
+        $rho;
+        tolerance       1e-06;
+        relTol          0;
+    }
+
+    p
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       0;
+        relTol          0.01;
+    }
+
+    pFinal
+    {
+        $p;
+        tolerance       1e-10;
+        relTol          0.01;
+    }
+
+/*
+    p
+    {
+        solver           GAMG;
+        tolerance        1e-6;
+        relTol           0.1;
+        //maxIter          500; // my addition
+        smoother         GaussSeidel;
+        nPreSweeps       0;
+        nPostSweeps      2;
+        cacheAgglomeration true;
+        nCellsInCoarsestLevel 50;//10;
+        agglomerator     faceAreaPair;
+        mergeLevels      1;
+    };
+
+    pFinal
+    {
+        solver           GAMG;
+        tolerance        1e-6;
+        relTol           0;
+        //maxIter          500; // my addition
+        smoother         GaussSeidel;
+        nPreSweeps       0;
+        nPostSweeps      2;
+        cacheAgglomeration true;
+        nCellsInCoarsestLevel 50;//10;
+        agglomerator     faceAreaPair;
+        mergeLevels      1;
+    };
+*/
+//////////////////////////////////////////////////
+
+    "(U|hs|k)"
+    {
+        solver          PBiCG;
+        preconditioner  DILU;
+        tolerance       0;
+        relTol          0.1;
+    }
+
+    "(U|hs|k)Final"
+    {
+        solver          PBiCG;
+        preconditioner  DILU;
+        tolerance       1e-10;
+        relTol          0.1;
+    }
+
+    Yi
+    {
+        $hsFinal;
+    }
+
+}
+
+PIMPLE
+{
+    nOuterCorrectors 2;
+    nCorrectors     2; // usually 2, no more than 4
+    nNonOrthogonalCorrectors 0;
+}
+
+// ************************************************************************* //

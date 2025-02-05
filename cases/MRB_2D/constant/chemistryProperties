@@ -1,0 +1,42 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.1.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      chemistryProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+chemistryType
+{
+    solver            ode;
+    method            standard;
+}
+
+
+// We're not using the FOAM chemistry solver, hence these settings are 
+chemistry           off;
+initialChemicalTimeStep 1e-07;
+
+odeCoeffs
+{
+    solver          seulex;
+    absTol          1e-08;
+    relTol          0.1;
+
+}
+
+//#include"../chemkinGri/speciesReaction"
+//#include"../Z42/speciesReaction"
+
+#include"../DRM22/speciesReaction"
+
+// ************************************************************************* //

@@ -1,0 +1,86 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.5                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+    class           dictionary;
+    object          setFieldsDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+
+defaultFieldValues
+(
+            volScalarFieldValue Cmean   0
+            volScalarFieldValue Zmean   0
+            volScalarFieldValue T   300
+            volScalarFieldValue CO2  0.0
+            volScalarFieldValue H2O  0.0
+            volScalarFieldValue CH4  0.0
+            volScalarFieldValue O2  0.2333
+            volScalarFieldValue N2  0.7669
+            volScalarFieldValue volMax 27
+);
+
+regions
+(
+	//cylinderToCell 
+	//{
+	//	axis   (1 0 0);
+	//	radius 80e-3;
+	//	point1 (-0.1 0 0);
+	//	point2 (1.040 0 0);
+	//	fieldValues 
+	//	(
+	//	 
+    //    //  volScalarFieldValue volMax   1000
+	//	 
+	//	 );
+	//}
+ 
+	  boxToCell 
+	  {
+        box (-0.1 0  -1) (0.030 30e-3 1);
+	  	fieldValues 
+	  	(
+	  	 
+              volScalarFieldValue T  2003
+              volScalarFieldValue Cmean   1.0
+              volScalarFieldValue Zmean   0.044
+              volScalarFieldValue CO2  0.121
+              volScalarFieldValue O2  0.0444
+              volScalarFieldValue CO  0.0053
+              volScalarFieldValue OH  0.00103
+              volScalarFieldValue N2  0.732
+              volScalarFieldValue H2O  0.099
+	  	 
+	  	 );
+	  }
+	  
+cylinderToCell 
+	  {
+	  	axis   (1 0 0);
+	  	radius 60e-3;
+	  	point1 (-0.1 0 0);
+	  	point2 (0.140 0 0);
+	  	fieldValues 
+	  	(
+	  	 
+//            volScalarFieldValue volMax   27
+	  	 
+	  	 );
+	  }
+
+
+
+);
+
+// ************************************************************************* //
