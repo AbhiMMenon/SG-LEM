@@ -1,6 +1,6 @@
 # Notes/TODO
 
-- 0D reactor initilazation for premixed solver no longer works, this is needed for the backward-step case, but not for the Volvo case. This is due to the change to Cantera-3.0.0
+- 0D reactor initialisation for premixed solver no longer works, this is needed for the backward-step case, but not for the Volvo case. This is due to the change to Cantera-3.0.0
 - OpenFOAM test cases to be added
 - Solver description
 
@@ -24,6 +24,7 @@
     - Or from PPA (not tested), see https://cantera.org/stable/install/ubuntu.html#sec-install-ubuntu
 
     - Either way, the exact file paths to `/include` and `/lib` folders in the installation are required.
+
 6. boost library (tested version 1.83)
 7. OpenMPI
 6. yaml-cpp (optional)
@@ -75,7 +76,7 @@ This installs both the shared (`libLEM.so`) and static (`libLEM.a`) versions of 
 1D flamelet subject to triplet-map stirring, stabilized in the domain by
 splicing operations. Note that Cantera 3.0.0 requires chemistry files in the
 `.yaml` format, the previous `.cti` formats need to be converted using the
-`ctml2yaml` utility distributed with Cantera. This has been done for the 'sk17'
+`cti2yaml` utility distributed with Cantera. This has been done for the 'sk17'
 mechanism for this test case, but not the others listed in the `input.yaml`
 file.
 
@@ -103,6 +104,12 @@ Exit directory
     cd ..
     cd ..
 
+**NOTE**: If using openFOAM was compiled with gcc > 10.x,  `functionObjects` can show an error 
+    
+    error in IOstream "OSHA1stream.sinkFile_"
+
+during runtime. See commit https://github.com/OpenFOAM/OpenFOAM-9/commit/b0c15bebd37142f3902901ed5e9a60e33ed456eb 
+ for the fix if it was compiled from an pre-patch source file.
 
 
 
@@ -117,7 +124,9 @@ The library used to generate super-grids though mesh agglomeration. We need to c
 
 ## 5. dbns library
 
-`OpenFOAM` library that uses `ParMGridGen-1.0` (serial) for coarse-graining CFD meshes. Tested for meshes made with `blockMesh` and also for those made with Ansys ICEM. *Should* work on any METIS format mesh.
+`OpenFOAM` library that uses `ParMGridGen-1.0` (serial) for coarse-graining CFD
+meshes. Tested for meshes made with `blockMesh` and also for those made with
+Ansys ICEM. *Should* work on any METIS format mesh.
 
 1. Ensure `$FOAM` environment variables are sourced, for `wmake`, as well as `sourceRC`
 2. Ensure `$(FOAM_USER_LIBBIN)` points to a folder
@@ -138,7 +147,9 @@ The library used to generate super-grids though mesh agglomeration. We need to c
 
 ## 6. (optional) userField library function
 
-Major bug in RMS  calculated by OpenFOAM leads to negative values. Use this if using an earlier version of OpenFOAM-9 compiled from source, i.e, before bug-fix/patch. Library functions can be switched on during runtime.
+Major bug in RMS  calculated by OpenFOAM leads to negative values. Use this if
+using an earlier version of OpenFOAM-9 compiled from source, i.e, before
+bug-fix/patch. Library functions can be switched on during runtime.
 
 1. Ensure `$FOAM` and `sourceRC` environment variables are sourced, as before
 2. Ensure `$(FOAM_USER_LIBBIN)` is valid, as before
@@ -150,9 +161,13 @@ Major bug in RMS  calculated by OpenFOAM leads to negative values. Use this if u
         cd ..
 
 
-## 7. Compile error -- "call of overloaded XX( ) is ambiguious"
+## 7. Compile error -- "call of overloaded XX( ) is ambiguous"
 
-If we try to compile the SG-LEM solvers, the above error is encountered. The following lines have to be modified in Cantera header file `Func1.h`, for Cantera 3.0.0 and earlier releases, to avoid overload ambiguity. This is due to either FOAM or the `boost` library using similarly named functions.  May require `sudo` privileges, i.e, `sudo bash`
+If we try to compile the SG-LEM solvers, the above error is encountered. The
+following lines have to be modified in Cantera header file `Func1.h`, for
+Cantera 3.0.0 and earlier releases, to avoid overload ambiguity. This is due to
+either FOAM or the `boost` library using similarly named functions.  May
+require `sudo` privileges, i.e, `sudo bash`
 
     sed -i "s/return sin/return std::sin/g" $CANTERAINCL/cantera/numerics/Func1.h
     sed -i "s/return cos/return std::cos/g" $CANTERAINCL/cantera/numerics/Func1.h
@@ -160,7 +175,7 @@ If we try to compile the SG-LEM solvers, the above error is encountered. The fol
     sed -i "s/return exp/return std::exp/g" $CANTERAINCL/cantera/numerics/Func1.h
     sed -i "s/return log/return std::log/g" $CANTERAINCL/cantera/numerics/Func1.h
 
-### 7.1 Overload ambiguious function in boost
+### 7.1 Overload ambiguous function in boost
 
 For the same reason as the above, needed for `boost` version 1_83. Root privilege is required if `boost` headers are in `/usr/`
 
