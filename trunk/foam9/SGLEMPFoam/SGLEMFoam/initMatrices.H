@@ -21,7 +21,12 @@ if(true){
         std::vector<double> BUFF(zBinSize*cBinSize*RSIZE,-100);
         std::vector<int> BUFF_found(zBinSize*cBinSize,0);
         if(Pstream::myProcNo()==0){
-          //if(initMatrices == "zeroD"){
+
+
+            // -- The 0D reactor needs to be re-written for Cantera 3.0.
+            // -- However, it is not being used for the MRB case.
+          
+            //if(initMatrices == "zeroD"){
           //    lemLines[0].initScalarZC_0D(flamLimitRich);
           //    file.open("init1.dat");
           //    lemLines[0].writeZCProps();

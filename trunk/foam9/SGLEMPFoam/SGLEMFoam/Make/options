@@ -27,7 +27,10 @@ EXE_INC = \
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -L$(PARMGRIDGEN) \
-    -Wl,-rpath=$(LEMLIB) \
+    -L$(LEMLIB)\
+    -Wl,-rpath=$(LEMLIB)\
+    -L$(CANTERALIB)\
+    -Wl,-rpath=$(CANTERALIB)\
     -lfluidThermophysicalModels \
     -lspecie \
     -lchemistryModel \
@@ -46,9 +49,7 @@ EXE_LIBS = \
     -lmeshTools \
     -lsampling \
     -ldbns\
-    -L$(LEMLIB) \
-    -lLEM \
-    -L$(CANTERALIB)/ \
     -lcantera_shared \
+    -lLEM \
     -lmpi_cxx\
     -lm
