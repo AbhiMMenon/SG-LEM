@@ -1,7 +1,12 @@
-# Notes/TODO
+# SG-LEM
 
+Repo for Super-grid Linear eddy model, (see [Menon el al. (2023). Comb. Theor
+Model](https://doi.org/10.1080/13647830.2023.2260351)).
+
+
+# Notes/TODO
 - 0D reactor initialisation for premixed solver no longer works, this is needed for the backward-step case, but not for the Volvo case. This is due to the change to Cantera-3.0.0
-- OpenFOAM test cases to be added
+- OpenFOAM cases to be added: Volvo afterburner, 3D Darmstadt MRB
 - Solver description
 
 
